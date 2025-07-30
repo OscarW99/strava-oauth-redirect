@@ -1,79 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RunBuilder - Strava Authorization</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            text-align: center;
-            background: #f5f5f5;
-        }
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .success { color: #28a745; }
-        .error { color: #dc3545; }
-    </style>
+    <title>Strava Auth</title>
 </head>
 <body>
-    <div class="container">
-        <h1>RunBuilder</h1>
-        <h2>Connecting to Strava...</h2>
-        <p id="status">Processing authorization...</p>
+    <h2>Connecting to Strava...</h2>
+    <script>
+        // This page just needs to exist - the mobile OS will intercept the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
         
-        <script>
-            // Get the authorization code from URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const error = urlParams.get('error');
-            const state = urlParams.get('state');
-            
-            const statusEl = document.getElementById('status');
-            
-            if (error) {
-                statusEl.innerHTML = '<span class="error">❌ Authorization failed: ' + error + '</span>';
-                console.log('OAuth error:', error);
-            } else if (code) {
-                statusEl.innerHTML = '<span class="success">✅ Authorization successful! Redirecting to app...</span>';
-                console.log('OAuth code received:', code);
-                
-                // Create the SAME URL but let the mobile OS intercept it
-                const currentUrl = window.location.href;
-                
-                // Force the mobile OS to handle this URL by "reloading" it
-                // This triggers the deep link handler in the app
-                setTimeout(() => {
-                    // Try multiple methods to trigger the deep link
-                    
-                    // Method 1: Try to "reload" the current URL 
-                    window.location.replace(currentUrl);
-                    
-                    // Method 2: If that doesn't work, try changing the hash
-                    setTimeout(() => {
-                        window.location.href = currentUrl + '#app-redirect';
-                    }, 500);
-                    
-                    // Method 3: Create a custom link the user can tap
-                    setTimeout(() => {
-                        statusEl.innerHTML = '<span class="success">✅ Authorization successful!</span><br><br>' +
-                            '<a href="' + currentUrl + '" style="background: #FC5200; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px;">Tap here to return to RunBuilder</a><br><br>' +
-                            '<small>If the app doesn\'t open automatically, tap the button above</small>';
-                    }, 2000);
-                    
-                }, 1000);
-                
-            } else {
-                statusEl.innerHTML = '<span class="error">❌ No authorization code received</span>';
-            }
-        </script>
-    </div>
+        if (code) {
+            document.body.innerHTML = '<h2>✅ Authorization successful!</h2><p>Returning to app...</p>';
+        } else {
+            document.body.innerHTML = '<h2>❌ Authorization failed</h2>';
+        }
+    </script>
 </body>
 </html>
