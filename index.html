@@ -45,13 +45,29 @@
                 statusEl.innerHTML = '<span class="success">✅ Authorization successful! Redirecting to app...</span>';
                 console.log('OAuth code received:', code);
                 
-                // Create the deep link URL that will open your app
-                const deepLink = `https://OscarW99.github.io/strava-oauth-redirect/?code=${code}` + 
-                    (state ? `&state=${state}` : '');
+                // Create the SAME URL but let the mobile OS intercept it
+                const currentUrl = window.location.href;
                 
-                // Try to redirect to the app
+                // Force the mobile OS to handle this URL by "reloading" it
+                // This triggers the deep link handler in the app
                 setTimeout(() => {
-                    window.location.href = deepLink;
+                    // Try multiple methods to trigger the deep link
+                    
+                    // Method 1: Try to "reload" the current URL 
+                    window.location.replace(currentUrl);
+                    
+                    // Method 2: If that doesn't work, try changing the hash
+                    setTimeout(() => {
+                        window.location.href = currentUrl + '#app-redirect';
+                    }, 500);
+                    
+                    // Method 3: Create a custom link the user can tap
+                    setTimeout(() => {
+                        statusEl.innerHTML = '<span class="success">✅ Authorization successful!</span><br><br>' +
+                            '<a href="' + currentUrl + '" style="background: #FC5200; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px;">Tap here to return to RunBuilder</a><br><br>' +
+                            '<small>If the app doesn\'t open automatically, tap the button above</small>';
+                    }, 2000);
+                    
                 }, 1000);
                 
             } else {
