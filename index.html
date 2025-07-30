@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RunBuilder - Strava Authorization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RunBuilder</h1>
+        <h2>Connecting to Strava...</h2>
+        <p id="status">Processing authorization...</p>
+        
+        <script>
+            // Get the authorization code from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const error = urlParams.get('error');
+            const state = urlParams.get('state');
+            
+            const statusEl = document.getElementById('status');
+            
+            if (error) {
+                statusEl.innerHTML = '<span class="error">❌ Authorization failed: ' + error + '</span>';
+                console.log('OAuth error:', error);
+            } else if (code) {
+                statusEl.innerHTML = '<span class="success">✅ Authorization successful! Redirecting to app...</span>';
+                console.log('OAuth code received:', code);
+                
+                // Create the deep link URL that will open your app
+                const deepLink = `https://OscarW99.github.io/strava-oauth-redirect/?code=${code}` + 
+                    (state ? `&state=${state}` : '');
+                
+                // Try to redirect to the app
+                setTimeout(() => {
+                    window.location.href = deepLink;
+                }, 1000);
+                
+            } else {
+                statusEl.innerHTML = '<span class="error">❌ No authorization code received</span>';
+            }
+        </script>
+    </div>
+</body>
+</html>
