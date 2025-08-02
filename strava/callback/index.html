@@ -1,54 +1,139 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>RunBuilder - Strava Auth</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RunBuilder - Strava OAuth</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-            background: linear-gradient(135deg, #fc4c02, #ff6b35);
-            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            color: white;
         }
         .container {
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
             backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .status {
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .success {
+            color: #4ade80;
+        }
+        .error {
+            color: #f87171;
+        }
+        .info {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🏃‍♂️ RunBuilder</h2>
-        <p>Connecting to Strava...</p>
-        <p id="status">Please wait...</p>
+        <div class="logo">🏃‍♂️ RunBuilder</div>
+        <div id="status" class="status">Connecting to Strava...</div>
+        <div id="spinner" class="spinner"></div>
+        <div class="info">
+            You can close this page once the connection is complete.
+        </div>
     </div>
 
     <script>
+        // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
+        const state = urlParams.get('state');
         const error = urlParams.get('error');
-        
+
+        const statusElement = document.getElementById('status');
+        const spinnerElement = document.getElementById('spinner');
+
         if (error) {
-            document.getElementById('status').innerHTML = '❌ Authorization failed: ' + error;
-        } else if (code) {
-            document.getElementById('status').innerHTML = '✅ Authorization successful!<br>Returning to RunBuilder...';
+            // Handle OAuth error
+            statusElement.textContent = 'Connection failed';
+            statusElement.className = 'status error';
+            spinnerElement.style.display = 'none';
             
-            // Try to redirect back to app after a short delay
+            // Try to redirect back to app with error
             setTimeout(() => {
-                // This should trigger the app to open
-                window.location.href = window.location.href;
+                const errorUrl = `runbuilder://strava-auth?error=${encodeURIComponent(error)}`;
+                window.location.href = errorUrl;
             }, 2000);
+        } else if (code) {
+            // Success - we have an authorization code
+            statusElement.textContent = 'Connection successful!';
+            statusElement.className = 'status success';
+            spinnerElement.style.display = 'none';
+            
+            // Construct the deep link URL with the authorization code
+            let deepLinkUrl = `runbuilder://strava-auth?code=${encodeURIComponent(code)}`;
+            if (state) {
+                deepLinkUrl += `&state=${encodeURIComponent(state)}`;
+            }
+            
+            // Try to redirect to the app
+            window.location.href = deepLinkUrl;
+            
+            // Fallback: Try universal link format for iOS
+            setTimeout(() => {
+                let universalLinkUrl = `https://oscarw99.github.io/strava-oauth-redirect/app-redirect?code=${encodeURIComponent(code)}`;
+                if (state) {
+                    universalLinkUrl += `&state=${encodeURIComponent(state)}`;
+                }
+                window.location.href = universalLinkUrl;
+            }, 1000);
+            
+            // Final fallback: Show manual instructions
+            setTimeout(() => {
+                statusElement.innerHTML = 'Please return to the RunBuilder app to complete the connection.';
+            }, 3000);
         } else {
-            document.getElementById('status').innerHTML = '❌ No authorization code received.';
+            // No code or error - this shouldn't happen
+            statusElement.textContent = 'Invalid response from Strava';
+            statusElement.className = 'status error';
+            spinnerElement.style.display = 'none';
         }
+
+        // Log for debugging
+        console.log('OAuth callback received:', {
+            code: code ? 'present' : 'missing',
+            state: state,
+            error: error,
+            fullUrl: window.location.href
+        });
     </script>
 </body>
 </html>
