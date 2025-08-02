@@ -1,11 +1,11 @@
 {
-    "applinks": {
-        "apps": [],
-        "details": [
-            {
-                "appID": "5GNC2JSW59.com.oscarw99.runbuilder",
-                "paths": ["/strava/callback"]
-            }
-        ]
-    }
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "5GNC2JSW59.com.oscarw99.runbuilder",
+        "paths": ["/strava/callback", "/strava/callback/*"]
+      }
+    ]
+  }
 }
