@@ -1,19 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Strava Auth</title>
+    <title>RunBuilder - Strava Auth</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(135deg, #fc4c02, #ff6b35);
+            color: white;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+    </style>
 </head>
 <body>
-    <h2>Connecting to Strava...</h2>
+    <div class="container">
+        <h2>🏃‍♂️ RunBuilder</h2>
+        <p>Connecting to Strava...</p>
+        <p id="status">Please wait...</p>
+    </div>
+
     <script>
-        // This page just needs to exist - the mobile OS will intercept the URL
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
+        const error = urlParams.get('error');
         
-        if (code) {
-            document.body.innerHTML = '<h2>✅ Authorization successful!</h2><p>Returning to app...</p>';
+        if (error) {
+            document.getElementById('status').innerHTML = '❌ Authorization failed: ' + error;
+        } else if (code) {
+            document.getElementById('status').innerHTML = '✅ Authorization successful!<br>Returning to RunBuilder...';
+            
+            // Try to redirect back to app after a short delay
+            setTimeout(() => {
+                // This should trigger the app to open
+                window.location.href = window.location.href;
+            }, 2000);
         } else {
-            document.body.innerHTML = '<h2>❌ Authorization failed</h2>';
+            document.getElementById('status').innerHTML = '❌ No authorization code received.';
         }
     </script>
 </body>
