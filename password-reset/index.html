@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trekon - Password Reset</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        .logo {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .message {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        .secondary-button {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        .secondary-button:hover {
+            background: #cbd5e0;
+        }
+        .loading {
+            display: none;
+            color: #667eea;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            color: #e53e3e;
+            background: #fed7d7;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🏃‍♂️</div>
+        <div class="title">Trekon</div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            Redirecting to app...
+        </div>
+        
+        <div id="desktop-message" style="display: none;">
+            <div class="title">Password Reset</div>
+            <div class="message">
+                Please open this link on a device with the Trekon app installed.
+            </div>
+            <div class="message">
+                Don't have the app? Download it from the App Store or Google Play.
+            </div>
+            <a href="#" class="secondary-button">Download Trekon</a>
+        </div>
+        
+        <div id="error" class="error">
+            Invalid or expired reset link. Please request a new password reset.
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get('access_token');
+        const refreshToken = urlParams.get('refresh_token');
+        const type = urlParams.get('type');
+        
+        // Also check hash parameters (Supabase sometimes uses hash)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashAccessToken = hashParams.get('access_token');
+        const hashRefreshToken = hashParams.get('refresh_token');
+        const hashType = hashParams.get('type');
+        
+        const token = accessToken || hashAccessToken;
+        const refresh = refreshToken || hashRefreshToken;
+        const resetType = type || hashType;
+        
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        function redirectToApp() {
+            if (!token) {
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                return;
+            }
+            
+            const appUrl = `runbuilder://password-reset?access_token=${token}&refresh_token=${refresh || ''}&type=${resetType || 'recovery'}`;
+            
+            console.log('Attempting to redirect to app:', appUrl);
+            
+            // Try to open the app
+            window.location.href = appUrl;
+            
+            // Fallback: if app doesn't open within 3 seconds, show desktop message
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('desktop-message').style.display = 'block';
+            }, 3000);
+        }
+        
+        // Check if we have the required tokens and redirect appropriately
+        if (token && resetType === 'recovery') {
+            if (isMobile()) {
+                document.getElementById('loading').style.display = 'block';
+                // Small delay to show loading state
+                setTimeout(redirectToApp, 1000);
+            } else {
+                // Desktop - show message immediately
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('desktop-message').style.display = 'block';
+            }
+        } else {
+            // No valid token - show error
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
