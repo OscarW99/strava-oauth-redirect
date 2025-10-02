@@ -119,36 +119,79 @@
     <script>
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const accessToken = urlParams.get('access_token');
-        const refreshToken = urlParams.get('refresh_token');
-        const type = urlParams.get('type');
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
         
-        // Also check hash parameters (Supabase sometimes uses hash)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const hashAccessToken = hashParams.get('access_token');
-        const hashRefreshToken = hashParams.get('refresh_token');
-        const hashType = hashParams.get('type');
+        console.log('Password reset URL params:', {
+            code: code ? 'Present' : 'Missing',
+            error: error,
+            error_description: errorDescription
+        });
         
-        const token = accessToken || hashAccessToken;
-        const refresh = refreshToken || hashRefreshToken;
-        const resetType = type || hashType;
+        // Check for errors first
+        if (error) {
+            console.error('Reset error:', error, errorDescription);
+            showError(`Reset failed: ${errorDescription || error}`);
+            return;
+        }
+        
+        // Check if we have a code
+        if (!code) {
+            console.error('No code parameter found in URL');
+            showError('Invalid reset link - missing verification code');
+            return;
+        }
         
         function isMobile() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         }
         
-        function redirectToApp() {
-            if (!token) {
-                document.getElementById('error').style.display = 'block';
+        function showError(message) {
+            document.getElementById('error').innerHTML = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('desktop-message').style.display = 'none';
+        }
+        
+        function redirectToApp(accessToken, refreshToken) {
+            const appUrl = `runbuilder://password-reset?access_token=${accessToken}&refresh_token=${refreshToken || ''}&code=${code}`;
+            
+            console.log('Redirecting to app with tokens');
+            
+            if (isMobile()) {
+                // Try to open the app
+                window.location.href = appUrl;
+                
+                // Fallback: if app doesn't open within 3 seconds, show desktop message
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('desktop-message').style.display = 'block';
+                }, 3000);
+            } else {
+                // Desktop - show message immediately
                 document.getElementById('loading').style.display = 'none';
-                return;
+                document.getElementById('desktop-message').style.display = 'block';
             }
-            
-            const appUrl = `runbuilder://password-reset?access_token=${token}&refresh_token=${refresh || ''}&type=${resetType || 'recovery'}`;
-            
-            console.log('Attempting to redirect to app:', appUrl);
-            
-            // Try to open the app
+        }
+        
+        // We have a valid code, now we need to exchange it for tokens
+        // This is the proper password reset flow
+        showLoading();
+        
+        // The code needs to be handled by the app directly
+        // Modern approach: pass the code to the app and let it handle the exchange
+        console.log('Valid reset code received, redirecting to app');
+        
+        const appUrl = `runbuilder://password-reset?code=${code}`;
+        
+        if (isMobile()) {
+            // Try to open the app with the code
             window.location.href = appUrl;
             
             // Fallback: if app doesn't open within 3 seconds, show desktop message
@@ -156,23 +199,10 @@
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('desktop-message').style.display = 'block';
             }, 3000);
-        }
-        
-        // Check if we have the required tokens and redirect appropriately
-        if (token && resetType === 'recovery') {
-            if (isMobile()) {
-                document.getElementById('loading').style.display = 'block';
-                // Small delay to show loading state
-                setTimeout(redirectToApp, 1000);
-            } else {
-                // Desktop - show message immediately
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('desktop-message').style.display = 'block';
-            }
         } else {
-            // No valid token - show error
-            document.getElementById('error').style.display = 'block';
+            // Desktop - show message immediately
             document.getElementById('loading').style.display = 'none';
+            document.getElementById('desktop-message').style.display = 'block';
         }
     </script>
 </body>
