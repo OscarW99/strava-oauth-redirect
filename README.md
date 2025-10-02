@@ -1,2 +1,2 @@
 # strava-oauth-redirect
-OAuth redirect page for RunBuilder app
+OAuth redirect page for Trekon app
