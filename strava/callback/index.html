@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RunBuilder - Strava OAuth</title>
+    <title>Trekon - Strava Connected</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -34,41 +34,38 @@
         .status {
             font-size: 1.2em;
             margin: 20px 0;
-        }
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid white;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .success {
             color: #4ade80;
-        }
-        .error {
-            color: #f87171;
         }
         .info {
             font-size: 0.9em;
             opacity: 0.8;
             margin-top: 20px;
         }
+        .button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">🏃‍♂️ RunBuilder</div>
-        <div id="status" class="status">Connecting to Strava...</div>
-        <div id="spinner" class="spinner"></div>
+        <div class="logo">🏃‍♂️ Trekon</div>
+        <div id="status" class="status">✅ Successfully connected to Strava!</div>
         <div class="info">
-            You can close this page once the connection is complete.
+            <p>Your Strava account is now linked to Trekon.</p>
+            <p>Please return to the Trekon app to continue.</p>
         </div>
+        <a href="#" onclick="openApp()" class="button">Open Trekon App</a>
     </div>
 
     <script>
@@ -78,57 +75,26 @@
         const state = urlParams.get('state');
         const error = urlParams.get('error');
 
-        const statusElement = document.getElementById('status');
-        const spinnerElement = document.getElementById('spinner');
-
-        if (error) {
-            // Handle OAuth error
-            statusElement.textContent = 'Connection failed';
-            statusElement.className = 'status error';
-            spinnerElement.style.display = 'none';
-            
-            // Try to redirect back to app with error
-            setTimeout(() => {
-                const errorUrl = `runbuilder://strava-auth?error=${encodeURIComponent(error)}`;
-                window.location.href = errorUrl;
-            }, 2000);
-        } else if (code) {
-            // Success - we have an authorization code
-            statusElement.textContent = 'Connection successful!';
-            statusElement.className = 'status success';
-            spinnerElement.style.display = 'none';
-            
-            // Construct the deep link URL with the authorization code
-            let deepLinkUrl = `runbuilder://strava-auth?code=${encodeURIComponent(code)}`;
-            if (state) {
-                deepLinkUrl += `&state=${encodeURIComponent(state)}`;
+        function openApp() {
+            if (code) {
+                // Try to open the app with the authorization code
+                const deepLinkUrl = `runbuilder://strava-auth?code=${encodeURIComponent(code)}${state ? `&state=${encodeURIComponent(state)}` : ''}`;
+                window.location.href = deepLinkUrl;
+            } else {
+                // Just try to open the app
+                window.location.href = 'runbuilder://';
             }
-            
-            // Try to redirect to the app
-            window.location.href = deepLinkUrl;
-            
-            // Fallback: Try universal link format for iOS
+        }
+
+        // Automatically try to open the app after a delay
+        if (code) {
             setTimeout(() => {
-                let universalLinkUrl = `https://oscarw99.github.io/strava-oauth-redirect/app-redirect?code=${encodeURIComponent(code)}`;
-                if (state) {
-                    universalLinkUrl += `&state=${encodeURIComponent(state)}`;
-                }
-                window.location.href = universalLinkUrl;
-            }, 1000);
-            
-            // Final fallback: Show manual instructions
-            setTimeout(() => {
-                statusElement.innerHTML = 'Please return to the RunBuilder app to complete the connection.';
-            }, 3000);
-        } else {
-            // No code or error - this shouldn't happen
-            statusElement.textContent = 'Invalid response from Strava';
-            statusElement.className = 'status error';
-            spinnerElement.style.display = 'none';
+                openApp();
+            }, 2000);
         }
 
         // Log for debugging
-        console.log('OAuth callback received:', {
+        console.log('App redirect page loaded:', {
             code: code ? 'present' : 'missing',
             state: state,
             error: error,
