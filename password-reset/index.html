@@ -133,15 +133,11 @@
         if (error) {
             console.error('Reset error:', error, errorDescription);
             showError(`Reset failed: ${errorDescription || error}`);
-            return;
-        }
-        
-        // Check if we have a code
-        if (!code) {
+        } else if (!code) {
             console.error('No code parameter found in URL');
             showError('Invalid reset link - missing verification code');
-            return;
-        }
+        } else {
+            // We have a valid code - show debug info
         
         function isMobile() {
             return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -205,6 +201,8 @@
             alert('About to redirect to: ' + appUrl);
             window.location.href = appUrl;
         };
+        
+        } // Close the else block
     </script>
 </body>
 </html>
