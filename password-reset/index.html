@@ -184,26 +184,27 @@
         // This is the proper password reset flow
         showLoading();
         
-        // The code needs to be handled by the app directly
-        // Modern approach: pass the code to the app and let it handle the exchange
-        console.log('Valid reset code received, redirecting to app');
+        // DEBUG: Show what we're working with
+        document.getElementById('loading').innerHTML = `
+            <h3>🔍 DEBUG INFO</h3>
+            <p><strong>Code found:</strong> ${code ? 'YES' : 'NO'}</p>
+            <p><strong>Code value:</strong> ${code || 'MISSING'}</p>
+            <p><strong>Is Mobile:</strong> ${isMobile()}</p>
+            <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+            <p><strong>App URL:</strong> runbuilder://password-reset?code=${code}</p>
+            <button onclick="testRedirect()" style="margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                🚀 Test Redirect (Click Me!)
+            </button>
+        `;
+        document.getElementById('loading').style.display = 'block';
         
-        const appUrl = `runbuilder://password-reset?code=${code}`;
-        
-        if (isMobile()) {
-            // Try to open the app with the code
+        // Function to test redirect manually
+        window.testRedirect = function() {
+            const appUrl = `runbuilder://password-reset?code=${code}`;
+            console.log('Attempting redirect to:', appUrl);
+            alert('About to redirect to: ' + appUrl);
             window.location.href = appUrl;
-            
-            // Fallback: if app doesn't open within 3 seconds, show desktop message
-            setTimeout(() => {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('desktop-message').style.display = 'block';
-            }, 3000);
-        } else {
-            // Desktop - show message immediately
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('desktop-message').style.display = 'block';
-        }
+        };
     </script>
 </body>
 </html>
