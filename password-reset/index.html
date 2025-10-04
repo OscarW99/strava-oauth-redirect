@@ -175,27 +175,15 @@
             }
 
             function logParams(params) {
-                const debugInfo = {
-                    fullUrl: window.location.href,
-                    search: window.location.search,
-                    hash: window.location.hash,
-                    code: params.code ? `${params.code.substring(0, 20)}...` : 'Missing',
-                    access_token: params.access_token ? `${params.access_token.substring(0, 20)}...` : 'Missing',
-                    refresh_token: params.refresh_token ? `${params.refresh_token.substring(0, 20)}...` : 'Missing',
+                console.log('Password reset URL params:', {
+                    code: params.code ? 'Present' : 'Missing',
+                    access_token: params.access_token ? 'Present' : 'Missing',
+                    refresh_token: params.refresh_token ? 'Present' : 'Missing',
                     email: params.email ? decodeURIComponent(params.email) : 'Missing',
                     type: params.type || 'Missing',
                     error: params.error,
-                    error_description: params.error_description,
-                    timestamp: new Date().toISOString(),
-                    userAgent: navigator.userAgent
-                };
-                console.log('Password reset URL params:', debugInfo);
-                
-                // Also display debug info on the page for troubleshooting
-                const debugElement = document.createElement('div');
-                debugElement.style.cssText = 'margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; font-family: monospace; font-size: 12px; text-align: left; max-height: 150px; overflow-y: auto;';
-                debugElement.innerHTML = `<strong>Debug Info:</strong><pre>${JSON.stringify(debugInfo, null, 2)}</pre>`;
-                document.querySelector('.container').appendChild(debugElement);
+                    error_description: params.error_description
+                });
             }
 
             function isMobile() {
@@ -247,12 +235,6 @@
 
                 const appUrl = `runbuilder://password-reset?${queryString}`;
                 console.log('Redirecting to app with deep link:', appUrl);
-
-                // Also show the deep link URL on the page for debugging
-                const linkElement = document.createElement('div');
-                linkElement.style.cssText = 'margin-top: 15px; padding: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px; font-size: 12px;';
-                linkElement.innerHTML = `<strong>Deep Link:</strong><br><code style="word-break: break-all; color: #60a5fa;">${appUrl}</code>`;
-                document.querySelector('.container').appendChild(linkElement);
 
                 if (isMobile()) {
                     window.location.href = appUrl;
