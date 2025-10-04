@@ -1,207 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trekon - Password Reset</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trekon Password Reset</title>
     <style>
+        :root {
+            color-scheme: light dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(160deg, #0f172a, #1e293b 55%, #0f172a 100%);
+            color: #f8fafc;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 24px;
         }
+
         .container {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: min(420px, 100%);
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 32px 28px;
             text-align: center;
-            max-width: 400px;
-            width: 100%;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.45);
         }
+
         .logo {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 40px;
+            margin-bottom: 12px;
         }
+
         .title {
-            font-size: 1.8em;
-            color: #333;
-            margin-bottom: 20px;
-            font-weight: 600;
+            font-size: clamp(26px, 5vw, 32px);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 4px;
         }
-        .message {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 30px;
+
+        .subtitle {
+            font-size: clamp(16px, 3.5vw, 18px);
+            color: rgba(226, 232, 240, 0.75);
+            margin-bottom: 32px;
         }
-        .button {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 12px 24px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 500;
-            margin: 10px;
-            transition: all 0.3s ease;
+
+    .loading,
+    .error,
+    #fallback-message {
+            margin: 24px 0 0;
         }
-        .button:hover {
-            background: #5a67d8;
-            transform: translateY(-2px);
-        }
-        .secondary-button {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-        .secondary-button:hover {
-            background: #cbd5e0;
-        }
-        .loading {
-            display: none;
-            color: #667eea;
-            margin: 20px 0;
-        }
+
         .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            border: 4px solid rgba(148, 163, 184, 0.25);
+            border-top-color: #38bdf8;
             animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-right: 10px;
+            margin: 0 auto 18px;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        .message {
+            font-size: clamp(15px, 3.2vw, 17px);
+            color: rgba(226, 232, 240, 0.85);
+            line-height: 1.6;
+            margin-bottom: 16px;
         }
+
         .error {
-            color: #e53e3e;
-            background: #fed7d7;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 20px 0;
+            padding: 18px 20px;
+            background: rgba(220, 38, 38, 0.12);
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            border-radius: 14px;
+            color: #fecaca;
             display: none;
+        }
+
+        .error strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .footer-note {
+            margin-top: 28px;
+            font-size: 14px;
+            color: rgba(148, 163, 184, 0.7);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 420px) {
+            .container {
+                padding: 28px 22px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">🏃‍♂️</div>
+        <div class="logo" aria-hidden="true">🏃‍♂️</div>
         <div class="title">Trekon</div>
-        
+        <p class="subtitle">Password reset in progress</p>
+
         <div id="loading" class="loading">
-            <div class="spinner"></div>
-            Redirecting to app...
+            <div class="spinner" role="status" aria-label="Loading"></div>
+            <p class="message">Redirecting you to the Trekon app…</p>
         </div>
-        
-        <div id="desktop-message" style="display: none;">
-            <div class="title">Password Reset</div>
-            <div class="message">
-                Please open this link on a device with the Trekon app installed.
-            </div>
-            <div class="message">
-                Don't have the app? Download it from the App Store or Google Play.
-            </div>
-            <a href="#" class="secondary-button">Download Trekon</a>
+
+        <div id="fallback-message" style="display: none;">
+            <p class="message"><strong>Open this link on your phone.</strong></p>
+            <p class="message">To finish resetting your password, open this reset link on a mobile device with the Trekon app installed.</p>
         </div>
-        
-        <div id="error" class="error">
-            Invalid or expired reset link. Please request a new password reset.
+
+        <div id="error" class="error" role="alert">
+            <strong>We couldn’t continue.</strong>
+            <span>Please request a new password reset link or contact support if the issue persists.</span>
         </div>
+
+        <p class="footer-note">For your security, this page will only redirect if your reset link is valid.</p>
     </div>
 
     <script>
-        // Get URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const error = urlParams.get('error');
-        const errorDescription = urlParams.get('error_description');
-        
-        console.log('Password reset URL params:', {
-            code: code ? 'Present' : 'Missing',
-            error: error,
-            error_description: errorDescription
-        });
-        
-        // Check for errors first
-        if (error) {
-            console.error('Reset error:', error, errorDescription);
-            showError(`Reset failed: ${errorDescription || error}`);
-        } else if (!code) {
-            console.error('No code parameter found in URL');
-            showError('Invalid reset link - missing verification code');
-        } else {
-            // We have a valid code - show debug info
-        
-        function isMobile() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        }
-        
-        function showError(message) {
-            document.getElementById('error').innerHTML = message;
-            document.getElementById('error').style.display = 'block';
-            document.getElementById('loading').style.display = 'none';
-        }
-        
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('error').style.display = 'none';
-            document.getElementById('desktop-message').style.display = 'none';
-        }
-        
-        function redirectToApp(accessToken, refreshToken) {
-            const appUrl = `runbuilder://password-reset?access_token=${accessToken}&refresh_token=${refreshToken || ''}&code=${code}`;
-            
-            console.log('Redirecting to app with tokens');
-            
-            if (isMobile()) {
-                // Try to open the app
-                window.location.href = appUrl;
-                
-                // Fallback: if app doesn't open within 3 seconds, show desktop message
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('desktop-message').style.display = 'block';
-                }, 3000);
-            } else {
-                // Desktop - show message immediately
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('desktop-message').style.display = 'block';
+        (function () {
+            const FALLBACK_DELAY_MS = 5000;
+            let fallbackTimer;
+
+            const elements = {
+                loading: document.getElementById('loading'),
+                fallbackMessage: document.getElementById('fallback-message'),
+                error: document.getElementById('error')
+            };
+
+            function clearFallbackTimer() {
+                if (!fallbackTimer) {
+                    return;
+                }
+
+                clearTimeout(fallbackTimer);
+                fallbackTimer = null;
             }
-        }
-        
-        // We have a valid code, now we need to exchange it for tokens
-        // This is the proper password reset flow
-        showLoading();
-        
-        // The code needs to be handled by the app directly
-        // Modern approach: pass the code to the app and let it handle the exchange
-        console.log('Valid reset code received, redirecting to app');
-        
-        const appUrl = `runbuilder://password-reset?code=${code}`;
-        
-        if (isMobile()) {
-            // Try to open the app with the code
-            window.location.href = appUrl;
-            
-            // Fallback: if app doesn't open within 3 seconds, show desktop message
-            setTimeout(() => {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('desktop-message').style.display = 'block';
-            }, 3000);
-        } else {
-            // Desktop - show message immediately
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('desktop-message').style.display = 'block';
-        }
-        
-        } // Close the else block
+
+            function getAllParams() {
+                const searchParams = new URLSearchParams(window.location.search);
+                const hashFragment = window.location.hash.startsWith('#')
+                    ? window.location.hash.slice(1)
+                    : window.location.hash;
+                const hashParams = new URLSearchParams(hashFragment);
+
+                return {
+                    code: hashParams.get('code') || searchParams.get('code'),
+                    access_token: hashParams.get('access_token') || searchParams.get('access_token'),
+                    refresh_token: hashParams.get('refresh_token') || searchParams.get('refresh_token'),
+                    email: hashParams.get('email') || searchParams.get('email'),
+                    type: hashParams.get('type') || searchParams.get('type'),
+                    error: hashParams.get('error') || searchParams.get('error'),
+                    error_description:
+                        hashParams.get('error_description') || searchParams.get('error_description')
+                };
+            }
+
+            function logParams(params) {
+                console.log('Password reset URL params:', {
+                    code: params.code ? 'Present' : 'Missing',
+                    access_token: params.access_token ? 'Present' : 'Missing',
+                    refresh_token: params.refresh_token ? 'Present' : 'Missing',
+                    email: params.email ? decodeURIComponent(params.email) : 'Missing',
+                    type: params.type || 'Missing',
+                    error: params.error,
+                    error_description: params.error_description
+                });
+            }
+
+            function isMobile() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                    navigator.userAgent
+                );
+            }
+
+            function showLoading() {
+                clearFallbackTimer();
+                elements.loading.style.display = 'block';
+                elements.error.style.display = 'none';
+                elements.fallbackMessage.style.display = 'none';
+            }
+
+            function showError(message) {
+                clearFallbackTimer();
+                elements.loading.style.display = 'none';
+                elements.fallbackMessage.style.display = 'none';
+                elements.error.style.display = 'block';
+                elements.error.querySelector('span').textContent = message;
+            }
+
+            function showFallbackMessage() {
+                clearFallbackTimer();
+                elements.loading.style.display = 'none';
+                elements.error.style.display = 'none';
+                elements.fallbackMessage.style.display = 'block';
+            }
+
+            function scheduleFallbackMessage() {
+                clearFallbackTimer();
+
+                if (!isMobile()) {
+                    showFallbackMessage();
+                    return;
+                }
+
+                fallbackTimer = setTimeout(() => {
+                    showFallbackMessage();
+                }, FALLBACK_DELAY_MS);
+            }
+
+            function redirectToApp(queryString) {
+                if (!queryString) {
+                    showError('Missing verification data. Please request a new password reset link.');
+                    return;
+                }
+
+                const appUrl = `runbuilder://password-reset?${queryString}`;
+                console.log('Redirecting to app with deep link:', appUrl);
+
+                if (isMobile()) {
+                    window.location.href = appUrl;
+                    scheduleFallbackMessage();
+                } else {
+                    showFallbackMessage();
+                }
+            }
+
+            const params = getAllParams();
+            logParams(params);
+
+            if (params.error) {
+                console.error('Reset error:', params.error, params.error_description);
+                showError(`Reset failed: ${params.error_description || params.error}`);
+                return;
+            }
+
+            if (!params.code && !params.access_token) {
+                console.error('Missing reset credentials in URL');
+                showError('Invalid reset link – missing verification credentials.');
+                return;
+            }
+
+            showLoading();
+
+            const query = new URLSearchParams();
+            if (params.code) query.set('code', params.code);
+            if (params.access_token) query.set('access_token', params.access_token);
+            if (params.refresh_token) query.set('refresh_token', params.refresh_token);
+            if (params.email) query.set('email', params.email);
+            if (params.type) query.set('type', params.type);
+
+            redirectToApp(query.toString());
+        })();
     </script>
 </body>
 </html>
