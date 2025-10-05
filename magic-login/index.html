@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trekon Magic Login</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(160deg, #0f172a, #1e293b 55%, #0f172a 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: min(420px, 100%);
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 32px 28px;
+            text-align: center;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.45);
+        }
+
+        .logo {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .title {
+            font-size: clamp(26px, 5vw, 32px);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: clamp(16px, 3.5vw, 18px);
+            color: rgba(226, 232, 240, 0.75);
+            margin-bottom: 32px;
+        }
+
+        .loading,
+        .error,
+        #fallback-message {
+            margin: 24px 0 0;
+        }
+
+        .spinner {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 4px solid rgba(148, 163, 184, 0.25);
+            border-top-color: #38bdf8;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 18px;
+        }
+
+        .message {
+            font-size: clamp(15px, 3.2vw, 17px);
+            color: rgba(226, 232, 240, 0.85);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .error {
+            padding: 18px 20px;
+            background: rgba(220, 38, 38, 0.12);
+            border: 1px solid rgba(248, 113, 113, 0.35);
+            border-radius: 14px;
+            color: #fecaca;
+            display: none;
+        }
+
+        .error strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .footer-note {
+            margin-top: 28px;
+            font-size: 14px;
+            color: rgba(148, 163, 184, 0.7);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 420px) {
+            .container {
+                padding: 28px 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo" aria-hidden="true">🏃‍♂️</div>
+        <div class="title">Trekon</div>
+        <p class="subtitle">Logging you in...</p>
+
+        <div id="loading" class="loading">
+            <div class="spinner" role="status" aria-label="Loading"></div>
+            <p class="message">Opening Trekon app and logging you in...</p>
+        </div>
+
+        <div id="fallback-message" style="display: none;">
+            <p class="message"><strong>Open this link on your phone.</strong></p>
+            <p class="message">To complete login, open this link on a mobile device with the Trekon app installed.</p>
+        </div>
+
+        <div id="error" class="error" role="alert">
+            <strong>Login failed.</strong>
+            <span>Please request a new login link or contact support if the issue persists.</span>
+        </div>
+
+        <p class="footer-note">You'll be automatically logged in when the app opens.</p>
+    </div>
+
+    <script>
+        (function () {
+            const FALLBACK_DELAY_MS = 5000;
+            let fallbackTimer;
+
+            const elements = {
+                loading: document.getElementById('loading'),
+                fallbackMessage: document.getElementById('fallback-message'),
+                error: document.getElementById('error')
+            };
+
+            function clearFallbackTimer() {
+                if (!fallbackTimer) {
+                    return;
+                }
+
+                clearTimeout(fallbackTimer);
+                fallbackTimer = null;
+            }
+
+            function getAllParams() {
+                const searchParams = new URLSearchParams(window.location.search);
+                const hashFragment = window.location.hash.startsWith('#')
+                    ? window.location.hash.slice(1)
+                    : window.location.hash;
+                const hashParams = new URLSearchParams(hashFragment);
+
+                return {
+                    access_token: hashParams.get('access_token') || searchParams.get('access_token'),
+                    refresh_token: hashParams.get('refresh_token') || searchParams.get('refresh_token'),
+                    type: hashParams.get('type') || searchParams.get('type'),
+                    error: hashParams.get('error') || searchParams.get('error'),
+                    error_description:
+                        hashParams.get('error_description') || searchParams.get('error_description')
+                };
+            }
+
+            function logParams(params) {
+                console.log('Magic login URL params:', {
+                    access_token: params.access_token ? 'Present' : 'Missing',
+                    refresh_token: params.refresh_token ? 'Present' : 'Missing',
+                    type: params.type || 'Missing',
+                    error: params.error,
+                    error_description: params.error_description
+                });
+            }
+
+            function isMobile() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                    navigator.userAgent
+                );
+            }
+
+            function showLoading() {
+                clearFallbackTimer();
+                elements.loading.style.display = 'block';
+                elements.error.style.display = 'none';
+                elements.fallbackMessage.style.display = 'none';
+            }
+
+            function showError(message) {
+                clearFallbackTimer();
+                elements.loading.style.display = 'none';
+                elements.fallbackMessage.style.display = 'none';
+                elements.error.style.display = 'block';
+                elements.error.querySelector('span').textContent = message;
+            }
+
+            function showFallbackMessage() {
+                clearFallbackTimer();
+                elements.loading.style.display = 'none';
+                elements.error.style.display = 'none';
+                elements.fallbackMessage.style.display = 'block';
+            }
+
+            function scheduleFallbackMessage() {
+                clearFallbackTimer();
+
+                if (!isMobile()) {
+                    showFallbackMessage();
+                    return;
+                }
+
+                fallbackTimer = setTimeout(() => {
+                    showFallbackMessage();
+                }, FALLBACK_DELAY_MS);
+            }
+
+            function redirectToApp(queryString) {
+                if (!queryString) {
+                    showError('Missing login credentials. Please request a new login link.');
+                    return;
+                }
+
+                const appUrl = `runbuilder://magic-login?${queryString}`;
+                console.log('Redirecting to app with magic login:', appUrl);
+
+                if (isMobile()) {
+                    window.location.href = appUrl;
+                    scheduleFallbackMessage();
+                } else {
+                    showFallbackMessage();
+                }
+            }
+
+            const params = getAllParams();
+            logParams(params);
+
+            if (params.error) {
+                console.error('Magic login error:', params.error, params.error_description);
+                showError(`Login failed: ${params.error_description || params.error}`);
+                return;
+            }
+
+            if (!params.access_token) {
+                console.error('Missing access token in magic login URL');
+                showError('Invalid login link – missing credentials.');
+                return;
+            }
+
+            showLoading();
+
+            const query = new URLSearchParams();
+            if (params.access_token) query.set('access_token', params.access_token);
+            if (params.refresh_token) query.set('refresh_token', params.refresh_token);
+            if (params.type) query.set('type', params.type);
+
+            redirectToApp(query.toString());
+        })();
+    </script>
+</body>
+</html>
