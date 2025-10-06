@@ -116,6 +116,12 @@
         <div class="logo" aria-hidden="true">🏃‍♂️</div>
         <div class="title">Trekon</div>
         <p class="subtitle">Password reset in progress</p>
+        
+        <!-- Add debug info for emulator testing -->
+        <div id="debug-overlay" style="display: none; margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px; text-align: left; font-family: monospace; font-size: 12px;">
+            <strong>Debug Mode Active</strong><br>
+            <span id="debug-details"></span>
+        </div>
 
         <div id="loading" class="loading">
             <div class="spinner" role="status" aria-label="Loading"></div>
@@ -184,6 +190,20 @@
                     error: params.error,
                     error_description: params.error_description
                 });
+                
+                // Show debug info on page for emulator testing
+                const debugOverlay = document.getElementById('debug-overlay');
+                const debugDetails = document.getElementById('debug-details');
+                if (debugOverlay && debugDetails) {
+                    debugDetails.innerHTML = `
+                        URL: ${window.location.href}<br>
+                        Code: ${params.code ? 'YES (' + params.code.substring(0,10) + '...)' : 'NO'}<br>
+                        Access Token: ${params.access_token ? 'YES' : 'NO'}<br>
+                        Email: ${params.email || 'NO'}<br>
+                        Error: ${params.error || 'NO'}
+                    `;
+                    debugOverlay.style.display = 'block';
+                }
             }
 
             function isMobile() {
